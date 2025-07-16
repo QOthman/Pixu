@@ -1,51 +1,56 @@
+//go:build !wasm
+// +build !wasm
+
 package graphics
 
 import (
-	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
 // Key constants - common keys
-const (
-	KeySpace     = glfw.KeySpace
-	KeyEscape    = glfw.KeyEscape
-	KeyEnter     = glfw.KeyEnter
-	KeyTab       = glfw.KeyTab
-	KeyBackspace = glfw.KeyBackspace
-	KeyDelete    = glfw.KeyDelete
+// const (
+// 	KeySpace     = glfw.KeySpace
+// 	KeyEscape    = glfw.KeyEscape
+// 	KeyEnter     = glfw.KeyEnter
+// 	KeyTab       = glfw.KeyTab
+// 	KeyBackspace = glfw.KeyBackspace
+// 	KeyDelete    = glfw.KeyDelete
 
-	// Arrow keys
-	KeyUp    = glfw.KeyUp
-	KeyDown  = glfw.KeyDown
-	KeyLeft  = glfw.KeyLeft
-	KeyRight = glfw.KeyRight
+// 	// Arrow keys
+// 	KeyUp    = glfw.KeyUp
+// 	KeyDown  = glfw.KeyDown
+// 	KeyLeft  = glfw.KeyLeft
+// 	KeyRight = glfw.KeyRight
 
-	// WASD
-	KeyW = glfw.KeyW
-	KeyA = glfw.KeyA
-	KeyS = glfw.KeyS
-	KeyD = glfw.KeyD
+// 	// WASD
+// 	KeyW = glfw.KeyW
+// 	KeyA = glfw.KeyA
+// 	KeyS = glfw.KeyS
+// 	KeyD = glfw.KeyD
 
-	// Numbers
-	Key0 = glfw.Key0
-	Key1 = glfw.Key1
-	Key2 = glfw.Key2
-	Key3 = glfw.Key3
-	Key4 = glfw.Key4
-	Key5 = glfw.Key5
-	Key6 = glfw.Key6
-	Key7 = glfw.Key7
-	Key8 = glfw.Key8
-	Key9 = glfw.Key9
+// 	// Numbers
+// 	Key0 = glfw.Key0
+// 	Key1 = glfw.Key1
+// 	Key2 = glfw.Key2
+// 	Key3 = glfw.Key3
+// 	Key4 = glfw.Key4
+// 	Key5 = glfw.Key5
+// 	Key6 = glfw.Key6
+// 	Key7 = glfw.Key7
+// 	Key8 = glfw.Key8
+// 	Key9 = glfw.Key9
 
-	// Mouse buttons
-	MouseLeft   = glfw.MouseButton1
-	MouseRight  = glfw.MouseButton2
-	MouseMiddle = glfw.MouseButton3
-)
+// 	// Mouse buttons
+// 	MouseLeft   = glfw.MouseButton1
+// 	MouseRight  = glfw.MouseButton2
+// 	MouseMiddle = glfw.MouseButton3
+// )
 
 // Input state tracking
 var (
+	keyStates = make(map[Key]bool)
+	prevKeyStates = make(map[Key]bool)
+
 	keysPressed      = make(map[int]bool)
 	keysJustPressed  = make(map[int]bool)
 	keysJustReleased = make(map[int]bool)
@@ -75,12 +80,12 @@ func setupInput(window *glfw.Window) {
 	window.SetScrollCallback(scrollCallback)
 
 	// Window size callback
-	window.SetSizeCallback(windowSizeCallback)
+	// window.SetSizeCallback(windowSizeCallback)
 }
 
-// Update input state
-// Call this every frame to update input states
-func UpdateInput() {
+// // Update input state
+// // Call this every frame to update input states
+func updateInput() {
 	// Clear "just pressed/released" states
 	for key := range keysJustPressed {
 		keysJustPressed[key] = false
@@ -103,94 +108,128 @@ func UpdateInput() {
 
 	scrollDeltaX = 0
 	scrollDeltaY = 0
+
+	keyStates[KeySpace] = window.GetKey(glfw.KeySpace) == glfw.Press
+	keyStates[KeyA] = window.GetKey(glfw.KeyA) == glfw.Press
+	keyStates[KeyB] = window.GetKey(glfw.KeyB) == glfw.Press
+	keyStates[KeyC] = window.GetKey(glfw.KeyC) == glfw.Press
+	keyStates[KeyD] = window.GetKey(glfw.KeyD) == glfw.Press
+	keyStates[KeyE] = window.GetKey(glfw.KeyE) == glfw.Press
+	keyStates[KeyF] = window.GetKey(glfw.KeyF) == glfw.Press
+	keyStates[KeyG] = window.GetKey(glfw.KeyG) == glfw.Press
+	keyStates[KeyH] = window.GetKey(glfw.KeyH) == glfw.Press
+	keyStates[KeyI] = window.GetKey(glfw.KeyI) == glfw.Press
+	keyStates[KeyJ] = window.GetKey(glfw.KeyJ) == glfw.Press
+	keyStates[KeyK] = window.GetKey(glfw.KeyK) == glfw.Press
+	keyStates[KeyL] = window.GetKey(glfw.KeyL) == glfw.Press
+	keyStates[KeyM] = window.GetKey(glfw.KeyM) == glfw.Press
+	keyStates[KeyN] = window.GetKey(glfw.KeyN) == glfw.Press
+	keyStates[KeyO] = window.GetKey(glfw.KeyO) == glfw.Press
+	keyStates[KeyP] = window.GetKey(glfw.KeyP) == glfw.Press
+	keyStates[KeyQ] = window.GetKey(glfw.KeyQ) == glfw.Press
+	keyStates[KeyR] = window.GetKey(glfw.KeyR) == glfw.Press
+	keyStates[KeyS] = window.GetKey(glfw.KeyS) == glfw.Press
+	keyStates[KeyT] = window.GetKey(glfw.KeyT) == glfw.Press
+	keyStates[KeyU] = window.GetKey(glfw.KeyU) == glfw.Press
+	keyStates[KeyV] = window.GetKey(glfw.KeyV) == glfw.Press
+	keyStates[KeyW] = window.GetKey(glfw.KeyW) == glfw.Press
+	keyStates[KeyX] = window.GetKey(glfw.KeyX) == glfw.Press
+	keyStates[KeyY] = window.GetKey(glfw.KeyY) == glfw.Press
+	keyStates[KeyZ] = window.GetKey(glfw.KeyZ) == glfw.Press
+	keyStates[KeyLeft] = window.GetKey(glfw.KeyLeft) == glfw.Press
+	keyStates[KeyRight] = window.GetKey(glfw.KeyRight) == glfw.Press
+	keyStates[KeyUp] = window.GetKey(glfw.KeyUp) == glfw.Press
+	keyStates[KeyDown] = window.GetKey(glfw.KeyDown) == glfw.Press
+	keyStates[KeyEnter] = window.GetKey(glfw.KeyEnter) == glfw.Press
+	keyStates[KeyEscape] = window.GetKey(glfw.KeyEscape) == glfw.Press
 }
 
-// ============= KEYBOARD FUNCTIONS =============
+// // ============= KEYBOARD FUNCTIONS =============
 
 // Check if a key is pressed (continuously)
 // Returns true if the key is currently pressed down
-func IsKeyPressed(key glfw.Key) bool {
-	return keysPressed[int(key)]
+func isKeyPressed(key Key) bool {
+	return keyStates[key] && !prevKeyStates[key]
 }
 
 // Check if a key is just pressed (one frame only)
 // Returns true if the key was pressed this frame
-func IsKeyJustPressed(key glfw.Key) bool {
-	return keysJustPressed[int(key)]
+func isKeyJustPressed(key Key) bool {
+	return keyStates[key]
 }
 
 // Check if a key is just released (one frame only)
 // Returns true if the key was released this frame
-func IsKeyJustReleased(key glfw.Key) bool {
-	return keysJustReleased[int(key)]
-}
+// func isKeyJustReleased(key glfw.Key) bool {
+// 	return keysJustReleased[int(key)]
+// }
 
-// ============= MOUSE FUNCTIONS =============
+// // ============= MOUSE FUNCTIONS =============
 
-// Check if a mouse button is pressed (continuously)
-// Returns true if the mouse button is currently pressed down
-func IsMousePressed(button glfw.MouseButton) bool {
-	return mousePressed[int(button)]
-}
+// // Check if a mouse button is pressed (continuously)
+// // Returns true if the mouse button is currently pressed down
+// func isMousePressed(button glfw.MouseButton) bool {
+// 	return mousePressed[int(button)]
+// }
 
-// Check if a mouse button is just pressed (one frame only)
-// Returns true if the mouse button was pressed this frame
-func IsMouseJustPressed(button glfw.MouseButton) bool {
-	return mouseJustPressed[int(button)]
-}
+// // Check if a mouse button is just pressed (one frame only)
+// // Returns true if the mouse button was pressed this frame
+// func isMouseJustPressed(button glfw.MouseButton) bool {
+// 	return mouseJustPressed[int(button)]
+// }
 
-// Check if a mouse button is just released (one frame only)
-// Returns true if the mouse button was released this frame
-func IsMouseJustReleased(button glfw.MouseButton) bool {
-	return mouseJustReleased[int(button)]
-}
+// // Check if a mouse button is just released (one frame only)
+// // Returns true if the mouse button was released this frame
+// func isMouseJustReleased(button glfw.MouseButton) bool {
+// 	return mouseJustReleased[int(button)]
+// }
 
-// Get mouse position
-func GetMousePosition() (float32, float32) {
-	return float32(mouseX), float32(mouseY)
-}
+// // Get mouse position
+// func getMousePosition() (float32, float32) {
+// 	return float32(mouseX), float32(mouseY)
+// }
 
-// Get mouse delta (movement since last frame)
-func GetMouseDelta() (float32, float32) {
-	return float32(mouseDeltaX), float32(mouseDeltaY)
-}
+// // Get mouse delta (movement since last frame)
+// func getMouseDelta() (float32, float32) {
+// 	return float32(mouseDeltaX), float32(mouseDeltaY)
+// }
 
-// Check if mouse moved
-func IsMouseMoved() bool {
-	return mouseDeltaX != 0 || mouseDeltaY != 0
-}
+// // Check if mouse moved
+// func isMouseMoved() bool {
+// 	return mouseDeltaX != 0 || mouseDeltaY != 0
+// }
 
-// Get scroll delta
-func GetScrollDelta() (float32, float32) {
-	return float32(scrollDeltaX), float32(scrollDeltaY)
-}
+// // Get scroll delta
+// func getScrollDelta() (float32, float32) {
+// 	return float32(scrollDeltaX), float32(scrollDeltaY)
+// }
 
-// Get scroll position
-func GetScrollPosition() (float32, float32) {
-	return float32(scrollX), float32(scrollY)
-}
+// // Get scroll position
+// func getScrollPosition() (float32, float32) {
+// 	return float32(scrollX), float32(scrollY)
+// }
 
-// Check if scroll wheel moved
-func IsScrollMoved() bool {
-	return scrollDeltaX != 0 || scrollDeltaY != 0
-}
+// // Check if scroll wheel moved
+// func isScrollMoved() bool {
+// 	return scrollDeltaX != 0 || scrollDeltaY != 0
+// }
 
-// ============= WINDOW FUNCTIONS =============
+// // ============= WINDOW FUNCTIONS =============
 
-func IsWindowResized() bool {
-	if windowWidth != lastWindowWidth || windowHeight != lastWindowHeight {
-		lastWindowWidth = windowWidth
-		lastWindowHeight = windowHeight
-		return true
-	}
-	return false
-}
+// // func IsWindowResized() bool {
+// // 	if windowWidth != lastWindowWidth || windowHeight != lastWindowHeight {
+// // 		lastWindowWidth = windowWidth
+// // 		lastWindowHeight = windowHeight
+// // 		return true
+// // 	}
+// // 	return false
+// // }
 
-func GetWindowSize() (int, int) {
-	return windowWidth, windowHeight
-}
+// // func GetWindowSize() (int, int) {
+// // 	return windowWidth, windowHeight
+// // }
 
-// ============= CALLBACKS =============
+// // ============= CALLBACKS =============
 
 func keyCallback(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
 	switch action {
@@ -224,8 +263,8 @@ func scrollCallback(w *glfw.Window, xoffset, yoffset float64) {
 	scrollDeltaY += yoffset
 }
 
-func windowSizeCallback(w *glfw.Window, width, height int) {
-	windowWidth = width
-	windowHeight = height
-	gl.Viewport(0, 0, int32(width), int32(height)) // Update viewport
-}
+// func windowSizeCallback(w *glfw.Window, width, height int) {
+// 	windowWidth = width
+// 	windowHeight = height
+// 	gl.Viewport(0, 0, int32(width), int32(height)) // Update viewport
+// }

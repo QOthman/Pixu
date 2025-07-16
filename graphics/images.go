@@ -1,3 +1,6 @@
+//go:build !wasm
+// +build !wasm
+
 package graphics
 
 import (
@@ -41,7 +44,7 @@ func initTextureSystem() {
 }
 
 // Load image mn file - supports PNG, JPEG, GIF
-func LoadImage(filePath string) (*Image, error) {
+func loadImage(filePath string) (*Image, error) {
 	// Open l file
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -95,8 +98,8 @@ func LoadImage(filePath string) (*Image, error) {
 }
 
 // Draw image at specific position
-func DrawImage(img *Image, x, y float32) {
-	DrawImageEx(img, DrawOptions{
+func drawImage(img *Image, x, y float32) {
+	drawImageEx(img, DrawOptions{
 		X:        x,
 		Y:        y,
 		Width:    float32(img.Width),
@@ -111,8 +114,8 @@ func DrawImage(img *Image, x, y float32) {
 }
 
 // Draw image scaled
-func DrawImageScaled(img *Image, x, y, scaleX, scaleY float32) {
-	DrawImageEx(img, DrawOptions{
+func drawImageScaled(img *Image, x, y, scaleX, scaleY float32) {
+	drawImageEx(img, DrawOptions{
 		X:        x,
 		Y:        y,
 		Width:    float32(img.Width) * scaleX,
@@ -127,8 +130,8 @@ func DrawImageScaled(img *Image, x, y, scaleX, scaleY float32) {
 }
 
 // Draw image rotated
-func DrawImageRotated(img *Image, x, y, rotation float32) {
-	DrawImageEx(img, DrawOptions{
+func drawImageRotated(img *Image, x, y, rotation float32) {
+	drawImageEx(img, DrawOptions{
 		X:        x,
 		Y:        y,
 		Width:    float32(img.Width),
@@ -143,8 +146,8 @@ func DrawImageRotated(img *Image, x, y, rotation float32) {
 }
 
 // Draw image with tint color
-func DrawImageTinted(img *Image, x, y float32, tint Color) {
-	DrawImageEx(img, DrawOptions{
+func drawImageTinted(img *Image, x, y float32, tint Color) {
+	drawImageEx(img, DrawOptions{
 		X:        x,
 		Y:        y,
 		Width:    float32(img.Width),
@@ -159,68 +162,73 @@ func DrawImageTinted(img *Image, x, y float32, tint Color) {
 }
 
 // Draw image extended - kol l options
-func DrawImageEx(img *Image, opts DrawOptions) {
+func drawImageEx(img *Image, opts DrawOptions) {
 	if img == nil || img.TextureID == 0 {
 		return // No image to draw
 	}
-	
+
+	// Set default width/height if not provided
 	if opts.Width == 0 {
-		opts.Width = float32(img.Width) // Default to the image width
+		opts.Width = float32(img.Width)
 	}
 	if opts.Height == 0 {
-		opts.Height = float32(img.Height) // Default to the image height
+		opts.Height = float32(img.Height)
 	}
 	if opts.SrcW <= 0 {
-		opts.SrcW = float32(img.Width) // Default to the image width
+		opts.SrcW = float32(img.Width)
 	}
 	if opts.SrcH <= 0 {
-		opts.SrcH = float32(img.Height) // Default to the image height
+		opts.SrcH = float32(img.Height)
 	}
 	if opts.Tint == (Color{}) {
-		opts.Tint = WHITE // Default tint color
+		opts.Tint = WHITE
 	}
-	
-	glX, glY := screenToGL(opts.X, opts.Y)
-	glW := opts.Width / float32(windowWidth) * 2.0
-	glH := opts.Height / float32(windowHeight) * 2.0
 
 	// Texture coordinates
 	texX := opts.SrcX / float32(img.Width)
-	texY := opts.SrcY / float32(img.Height)
+	texY := 1.0 - (opts.SrcY + opts.SrcH) / float32(img.Height)
 	texW := opts.SrcW / float32(img.Width)
 	texH := opts.SrcH / float32(img.Height)
 
-	// Calculate rotation angle (in degrees )
+
+	// Rotation angle in radians
 	rotation := opts.Rotation * math.Pi / 180.0
 
-	// Image center in normalized coordinates (relative to the window size)
-	centerX := glX + glW/2
-	centerY := glY - glH/2
+	// Center of the image in screen (pixel) coordinates
+	centerPx := opts.X + opts.Width/2
+	centerPy := opts.Y + opts.Height/2
 
-	rotatePoint := func(x, y, cx, cy float32, angle float32) (float32, float32) {
-		// Translate point to origin (by subtracting the center)
-		translatedX := x - cx
-		translatedY := y - cy
+	// Helper function: rotate a point (x, y) around the center (in pixels)
+	rotatePixel := func(x, y float32) (float32, float32) {
+		translatedX := x - centerPx
+		translatedY := y - centerPy
 
-		// Apply rotation matrix
-		rotatedX := translatedX*float32(math.Cos(float64(angle))) - translatedY*float32(math.Sin(float64(angle)))
-		rotatedY := translatedX*float32(math.Sin(float64(angle))) + translatedY*float32(math.Cos(float64(angle)))
+		sin, cos := float32(math.Sin(float64(rotation))), float32(math.Cos(float64(rotation)))
 
-		// Translate back to original position
-		return rotatedX + cx, rotatedY + cy
+		rotatedX := translatedX*cos - translatedY*sin
+		rotatedY := translatedX*sin + translatedY*cos
+
+		return rotatedX + centerPx, rotatedY + centerPy
 	}
 
-	tlx, tly := rotatePoint(glX, glY, centerX, centerY, rotation) // top-left
-	trx, try := rotatePoint(glX + glW, glY, centerX, centerY, rotation) // top-right
-	brx, bry := rotatePoint(glX + glW, glY - glH, centerX, centerY, rotation) // bottom-right
-	blx, bly := rotatePoint(glX, glY - glH, centerX, centerY, rotation)
+	// Rotate all four corners in pixel space
+	px_tlx, py_tly := rotatePixel(opts.X, opts.Y)                     // top-left
+	px_trx, py_try := rotatePixel(opts.X+opts.Width, opts.Y)           // top-right
+	px_brx, py_bry := rotatePixel(opts.X+opts.Width, opts.Y+opts.Height) // bottom-right
+	px_blx, py_bly := rotatePixel(opts.X, opts.Y+opts.Height)          // bottom-left
 
-	// Vertex data
+	// Convert rotated pixel positions to OpenGL normalized coordinates
+	gl_tlx, gl_tly := screenToGL(px_tlx, py_tly)
+	gl_trx, gl_try := screenToGL(px_trx, py_try)
+	gl_brx, gl_bry := screenToGL(px_brx, py_bry)
+	gl_blx, gl_bly := screenToGL(px_blx, py_bly)
+
+	// Vertex data with position (GL coords), texture coords, and tint color
 	vertices := []float32{
-		tlx, tly, texX, texY + texH, opts.Tint.R, opts.Tint.G, opts.Tint.B, opts.Tint.A, // top-left
-		trx, try, texX + texW, texY + texH, opts.Tint.R, opts.Tint.G, opts.Tint.B, opts.Tint.A, // top-right
-		brx, bry, texX + texW, texY, opts.Tint.R, opts.Tint.G, opts.Tint.B, opts.Tint.A, // bottom-right
-		blx, bly, texX, texY, opts.Tint.R, opts.Tint.G, opts.Tint.B, opts.Tint.A, // bottom-left
+		gl_tlx, gl_tly, texX, texY + texH, opts.Tint.R, opts.Tint.G, opts.Tint.B, opts.Tint.A, // top-left
+		gl_trx, gl_try, texX + texW, texY + texH, opts.Tint.R, opts.Tint.G, opts.Tint.B, opts.Tint.A, // top-right
+		gl_brx, gl_bry, texX + texW, texY, opts.Tint.R, opts.Tint.G, opts.Tint.B, opts.Tint.A, // bottom-right
+		gl_blx, gl_bly, texX, texY, opts.Tint.R, opts.Tint.G, opts.Tint.B, opts.Tint.A, // bottom-left
 	}
 
 	indices := []uint32{0, 1, 2, 2, 3, 0}
@@ -261,6 +269,6 @@ func drawTexturedQuad(img *Image, vertices []float32, indices []uint32) {
 
 // Delete image texture
 // This function deletes the OpenGL texture associated with the image.
-func (img *Image) Delete() {
+func deleteImage(img *Image) {
 	gl.DeleteTextures(1, &img.TextureID)
 }

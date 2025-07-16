@@ -1,3 +1,6 @@
+//go:build !wasm
+// +build !wasm
+
 package graphics
 
 import (
@@ -20,7 +23,7 @@ func init() {
 }
 
 // Initialize for graphics system
-func Init(width, height int, title string) error {
+func initPlatform(width, height int, title string) error {
 	windowWidth, windowHeight = width, height
 	
 	if err := glfw.Init(); err != nil {
@@ -37,7 +40,7 @@ func Init(width, height int, title string) error {
 		return err
 	}
 	window.MakeContextCurrent()
-	setupInput(window)
+	// setupInput(window)
 	if err := gl.Init(); err != nil {
 		return err
 	}
@@ -59,7 +62,7 @@ func ShouldContinue() bool {
 }
 
 // Clear the background with a color
-func ClearBackground(color Color) {
+func clearBackground(color Color) {
 	gl.ClearColor(color.R, color.G, color.B, color.A)
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 }
@@ -74,6 +77,6 @@ func Present() {
 
 // Close the graphics system
 // This should be called when the application is done with graphics
-func Close() {
+func close() {
 	glfw.Terminate()
 }

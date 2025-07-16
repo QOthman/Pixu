@@ -1,3 +1,6 @@
+//go:build !wasm
+// +build !wasm
+
 package graphics
 
 import (
@@ -7,7 +10,7 @@ import (
 )
 
 // Draw line between two points
-func DrawLine(x1, y1, x2, y2 float32, color Color) {
+func drawLine(x1, y1, x2, y2 float32, color Color) {
 	x1GL, y1GL := screenToGL(x1, y1)
 	x2GL, y2GL := screenToGL(x2, y2)
 
@@ -20,7 +23,7 @@ func DrawLine(x1, y1, x2, y2 float32, color Color) {
 }
 
 // Draw triangle between three points
-func DrawTriangle(x1, y1, x2, y2, x3, y3 float32, color Color) {
+func drawTriangle(x1, y1, x2, y2, x3, y3 float32, color Color) {
 	glX1, glY1 := screenToGL(x1, y1)
 	glX2, glY2 := screenToGL(x2, y2)
 	glX3, glY3 := screenToGL(x3, y3)
@@ -34,8 +37,8 @@ func DrawTriangle(x1, y1, x2, y2, x3, y3 float32, color Color) {
 	drawVertices(vertices, 3, gl.TRIANGLES)
 }
 
-// Draw rectangle 
-func DrawRectangle(x, y, width, height float32, color Color) {
+// Draw rectangle
+func drawRectangle(x, y, width, height float32, color Color) {
 	glX, glY := screenToGL(x, y)
 	glW := width / float32(windowWidth) * 2.0
 	glH := height / float32(windowHeight) * 2.0
@@ -48,12 +51,13 @@ func DrawRectangle(x, y, width, height float32, color Color) {
 	}
 
 	indices := []uint32{0, 1, 2, 2, 3, 0}
+
 	drawIndexed(vertices, indices)
 }
 
 // Draw circle by center and radius
 // Circle is drawn using triangle fan with segments
-func DrawCircle(centerX, centerY, radius float32, color Color) {
+func drawCircle(centerX, centerY, radius float32, color Color) {
 	const segments = 32
 	vertices := make([]float32, 0, (segments+2)*5) // center + segments + first point again
 
@@ -74,7 +78,7 @@ func DrawCircle(centerX, centerY, radius float32, color Color) {
 }
 
 // Draw rectangle outline
-func DrawRectangleOutline(x, y, width, height float32, color Color) {
+func drawRectangleOutline(x, y, width, height float32, color Color) {
 	glX, glY := screenToGL(x, y)
 	glW := width / float32(windowWidth) * 2.0
 	glH := height / float32(windowHeight) * 2.0
