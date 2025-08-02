@@ -1,4 +1,4 @@
-module main
+module github.com/QOthman/Pixu
 
 go 1.23.4
 
